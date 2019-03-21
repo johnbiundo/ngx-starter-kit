@@ -153,7 +153,7 @@
     "d3": "4.13.0",
     "d3-selection-multi": "1.0.1",
     "date-fns": "^2.0.0-alpha.27",
-    "filepond": "^4.2.0",
+    "filepond": "^4.3.2",
     "filepond-plugin-file-encode": "^2.1.1",
     "filepond-plugin-file-validate-size": "^2.1.0",
     "filepond-plugin-file-validate-type": "^1.2.0",
