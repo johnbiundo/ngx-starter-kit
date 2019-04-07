@@ -1,5 +1,8 @@
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 
+# docs
+/documentation
+
 # compiled output
 /dist
 /tmp
@@ -51,3 +54,5 @@ Thumbs.db
 =======
 # Local
 todo
+tsconfig.compodoc.json
+.compodocrc.json
