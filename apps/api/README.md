@@ -4,12 +4,15 @@
 
 Backend API build with [Nest](https://github.com/nestjs/nest) Framework.
 
+This project uses [@nestjsx/crud](https://github.com/nestjsx/crud) to simplify and standardize the REST API
+
 ## Built with
 
 | Component      | Using                                                                                            | Descrption |
 | -------------- | ------------------------------------------------------------------------------------------------ | ---------- |
 | Base           | [NestJS](https://nestjs.com)                                                                     |
 | ORM            | [TypeORM](http://typeorm.io/)                                                                    |
+| CRUD           | [@nestjsx/crud](https://github.com/nestjsx/crud)                                                 |
 | File Upload    | [Multer](https://github.com/expressjs/multer)                                                    |
 | Validation     | [Class-Validator](https://github.com/typestack/class-validator)                                  |
 | Documentation  | [Open API(Swagger)](https://swagger.io)                                                          |
@@ -57,7 +60,7 @@ ng serve api
 # to turn on logging for `request`
 NODE_DEBUG=request ng serve api
 DEBUG=typeorm:* ng serve api
-# optinally you can run with prod env(environment.prod.ts) for tesrting! use this for testing only.
+# optionally you can run with prod env(environment.prod.ts) for tesrting! use this for testing only.
 ng serve api --prod
 ```
 
@@ -82,6 +85,12 @@ node dist/apps/api/main.js
 
 ```bash
 ng build api --prod
+```
+
+### Commands
+```bash
+# to run custom commands, `check api:sumo in angular.json`
+ng run api:sumo
 ```
 
 ### Generate

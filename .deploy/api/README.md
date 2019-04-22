@@ -5,10 +5,10 @@ Build and Deploy NgxApi
 ### Build
 
 ```bash
-# build
-VERSION=2.0.0-SNAPSHOT
+# build, optionally use `--no-cache`
+export VERSION=2.0.0-SNAPSHOT
+export DOCKER_BUILDKIT=1
 docker build \
---no-cache \
 --build-arg VERSION=$VERSION \
 --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
 -t xmlking/ngxapi -f .deploy/api/Dockerfile .

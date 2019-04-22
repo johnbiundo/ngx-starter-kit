@@ -1,6 +1,8 @@
 import { Injectable, Logger, OnApplicationBootstrap, OnApplicationShutdown } from '@nestjs/common';
 import {
   DNSHealthIndicator,
+  MemoryHealthIndicator,
+  DiskHealthIndicator,
   TerminusEndpoint,
   TerminusModuleOptions,
   TerminusOptionsFactory,
@@ -22,11 +24,13 @@ enum State {
 @Injectable()
 export class AppHealthService implements TerminusOptionsFactory, OnApplicationBootstrap, OnApplicationShutdown {
   readonly logger = new Logger(AppHealthService.name);
-  status: State;
+  private statusP = State.UNKNOWN;
 
   constructor(
     private readonly db: TypeOrmHealthIndicator,
     private readonly dns: DNSHealthIndicator,
+    private readonly memory: MemoryHealthIndicator,
+    private readonly disk: DiskHealthIndicator,
     private readonly kubernetes: KubernetesHealthIndicator,
   ) {}
 
@@ -35,6 +39,9 @@ export class AppHealthService implements TerminusOptionsFactory, OnApplicationBo
       {
         url: '/ready', // Non-OK causes no load
         healthIndicators: [
+          async () => this.memory.checkHeap('memory_heap', 200 * 1024 * 1024),
+          async () => this.memory.checkRSS('memory_rss', 3000 * 1024 * 1024),
+          // async () => this.disk.checkStorage('storage', {  thresholdPercent: 0.8, path: '/' }),
           async () => this.dns.pingCheck('weather', 'https://samples.openweathermap.org'),
           async () => this.kubernetes.pingCheck('kubernetes'),
         ],
@@ -42,9 +49,7 @@ export class AppHealthService implements TerminusOptionsFactory, OnApplicationBo
       {
         // Unlike a readiness probe, it is not idiomatic to check dependencies in a liveness probe.
         url: '/live', // Non-OK causes restart
-        healthIndicators: [
-          async () => this.db.pingCheck('database', { timeout: 300 })
-        ],
+        healthIndicators: [async () => this.db.pingCheck('database', { timeout: 300 })],
       },
     ];
     return {
@@ -62,7 +67,7 @@ export class AppHealthService implements TerminusOptionsFactory, OnApplicationBo
     this.status = State.STOPPING;
     console.log('in onApplicationShutdown, signal: ', signal); // e.g. "SIGINT"
     // write an event to `/dev/termination-log` and you can view the message using `kubectl describe pod...`
-
+    // echo "[Error] - {{ msg }}" > /dev/termination-log
     // process.kill(process.pid, 'SIGINT');
 
     // Gracefully stop server
@@ -73,5 +78,71 @@ export class AppHealthService implements TerminusOptionsFactory, OnApplicationBo
     // ])
     //   .then(() => process.exit(0))
     //   .catch((err) => process.exit(-1))
+
+  }
+
+  get status(): State {
+    return this.statusP;
+  }
+
+  set status(status: State) {
+    switch (this.statusP) {
+      case State.UNKNOWN:
+        this.statusP = status;
+        break;
+
+      case State.STARTING:
+        switch (status) {
+          case State.STARTING:
+            this.statusP = State.STARTING;
+            break;
+          case State.DOWN:
+            this.statusP = State.DOWN;
+            break;
+        }
+        break;
+
+      case State.UP:
+        switch (status) {
+          case State.STARTING:
+            this.statusP = State.STARTING;
+            break;
+          case State.UP:
+            this.statusP = State.UP;
+            break;
+          case State.DOWN:
+            this.statusP = State.DOWN;
+            break;
+        }
+        break;
+
+      case State.DOWN:
+        break;
+
+      case State.STOPPING:
+        switch (status) {
+          case State.STOPPING:
+            this.statusP = State.STOPPING;
+            break;
+          case State.DOWN:
+            this.statusP = State.STOPPED;
+            break;
+          case State.STOPPED:
+            this.statusP = State.STOPPED;
+            break;
+        }
+        break;
+
+      case State.STOPPED:
+        switch (status) {
+          case State.STOPPING:
+            this.statusP = State.STOPPING;
+            break;
+          case State.DOWN:
+            this.statusP = State.STOPPED;
+            break;
+        }
+        break;
+    }
   }
 }

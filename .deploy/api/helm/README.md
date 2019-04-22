@@ -5,7 +5,7 @@ Deploying `NgxApi` to `Kubernetes` via `Helm`
 ## Prerequisites
 
 1. Helm command line and Tiller backend [installed](../../helm/README.md).
-2. `helm-secrets` [installed](../../helm/README.md).
+2. `helm-secrets` [installed](../../helm/README.md#managing-helm-chart-secrets-with-helm-secrets).
 
 first create plain `secrets.dev.yaml` e.g., 
 
@@ -83,7 +83,7 @@ kubectl apply --recursive -f generated/nodeapp/* --namespace default
 
 ngxapi can be accessed:
 
-* Within your cluster, at the following DNS name at port 80:
+* Within your cluster, at the following DNS name at port 3000:
 
   ```
   ngxapi-nodeapp.default.svc.cluster.local
